@@ -116,6 +116,7 @@ logs/
 *.pyc
 results
 .*.swp
+reports/
 
 xyz2LspSmpl_PyTorch/human36mTestImgVis
 xyz2LspSmpl_PyTorch/model_3_layer_perceptron
