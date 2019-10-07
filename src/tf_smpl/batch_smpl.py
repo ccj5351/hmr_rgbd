@@ -11,7 +11,13 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-import cPickle as pickle
+
+import sys
+if sys.version_info[0] < 3:
+        #raise Exception("Must be using Python 3")
+        import cPickle as pickle
+else:
+    import _pickle as pickle
 
 import tensorflow as tf
 from .batch_lbs import batch_rodrigues, batch_global_rigid_transformation

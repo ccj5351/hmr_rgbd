@@ -899,10 +899,10 @@ def main(unused_argv):
             process_cad(num_imgs, annos_dict, images_dict, img_dir, out_path, out_dir, FLAGS.train_shards)
     
     elif FLAGS.task_type_cad == 'joints_annotation_from_cad_gt':
-        # here M is hard-coded as:
         cad_to_lsp_idx_2d = get_cad_2_lsp_idx(is2DJoints = True)
         cad_to_lsp_idx_3d = get_cad_2_lsp_idx(is2DJoints = False)
 
+        # here M is hard-coded as:
         M_cad_60 =  np.array([[320.0/1.12,   .0,       320.0/2.0], 
                               [     .0,   -240.0/0.84, 240.0/2.0],
                               [.0,           .0,             1.0]])
