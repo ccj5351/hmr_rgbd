@@ -173,8 +173,10 @@ def visualize_cad_gt3D_2D(
             radius = 2, color = (255,0,0), thickness = 2)
 
         tmp_name = image_name.split("/")[-3] + '-' + image_name.split("/")[-2] + '-' + image_name.split("/")[-1]
-        tmp_name_img = join(out_dir, "{}_img_orig.pfm".format(tmp_name[:-4]))
-        pfm.save(tmp_name_img, image[:,:,(2,1,0)].astype(np.float32))
+        #tmp_name_img = join(out_dir, "{}_img_orig.pfm".format(tmp_name[:-4]))
+        #pfm.save(tmp_name_img, image[:,:,(2,1,0)].astype(np.float32))
+        tmp_name_img = join(out_dir, "{}_img_2Djoints.png".format(tmp_name[:-4]))
+        cv2.imwrite(tmp_name_img, image)
         print ('saved %s' % tmp_name_img)
 
     # Finally return how many were written.
@@ -263,10 +265,6 @@ def main(args):
                             out_dir = out_dir
                             )
 
-
-            
-            
-
     else:
         print("ERROR!!! args.task_type_cad is %s. It should be 'joints_annotation_from_cad_gt' or 'joints_annotation_from_densepose' or 'visualize_joints_annotation_from_cad_gt'"
                     % args.task_type_cad)
@@ -277,10 +275,8 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--task_type_cad', dest = 'task_type_cad', type = str, default = 'visualize_joints_annotation_from_cad_gt')
-    parser.add_argument('--img_directory', dest = 'img_directory', type = str, default = '/usr/local/ccjData/datasets/cad-60-120/')
-    parser.add_argument('--output_directory', dest = 'output_directory', type = str, default = './results/cad_60_tmp')
+    parser.add_argument('--img_dir', dest = 'img_directory', type = str, default = '/usr/local/ccjData/datasets/cad-60-120/')
+    parser.add_argument('--output_dir', dest = 'output_directory', type = str, default = './results/cad_60_tmp')
     args = parser.parse_args()
     
     main(args)
-    
-    
