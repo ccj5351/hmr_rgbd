@@ -1,7 +1,5 @@
-
 '''
     file:   config.py
-
     date:   2018_04_29
     author: zhangxiong(1025679612@qq.com)
 '''
@@ -27,7 +25,7 @@ parser.add_argument(
 parser.add_argument(
     '--smpl-mean-theta-path', 
     type = str, 
-    default = 'E:/HMR/model/neutral_smpl_mean_params.h5', 
+    default = '/home/ccj/hmr-rgbd/models/neutral_smpl_mean_params.h5', 
     help = 'the path for mean smpl theta value'
 )
 
