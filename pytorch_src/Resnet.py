@@ -1,4 +1,3 @@
-
 '''
     file:   Resnet.py
 
@@ -169,9 +168,16 @@ def load_Res50Model():
     return model
 
 if __name__ == '__main__':
-    vx = torch.autograd.Variable(torch.from_numpy(np.array([1, 1, 1])))
-    vy = torch.autograd.Variable(torch.from_numpy(np.array([2, 2, 2])))
-    vz = torch.cat([vx, vy], 0)
-    vz[0] = 100
-    print(vz)
-    print(vx)
+    encoder = load_Res50Model()
+    print ('resnet-50 state_dict():')
+    n = 0
+    for k,v in encoder.state_dict().items():
+        print (k, v.shape)
+        n += 1
+    print (n)
+    #vx = torch.autograd.Variable(torch.from_numpy(np.array([1, 1, 1])))
+    #vy = torch.autograd.Variable(torch.from_numpy(np.array([2, 2, 2])))
+    #vz = torch.cat([vx, vy], 0)
+    #vz[0] = 100
+    #print(vz)
+    #print(vx)
