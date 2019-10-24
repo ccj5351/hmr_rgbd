@@ -147,16 +147,16 @@ class BasicBlock(nn.Module):
 
         return out
 
-def copy_parameter_from_resnet50(custom_model, res50_dict):
-    custom_state_dict = custom_model.state_dict()
-    for name, param in list(res50_dict.items())[0:None]:
-        if name not in custom_state_dict: 
+def copy_parameter_from_resnet50(dst_custom_model, src_res50_state_dict):
+    dst_state_dict = dst_custom_model.state_dict()
+    for name, param in list(src_res50_state_dict.items())[0:None]:
+        if name not in dst_state_dict: 
             print('unexpected ', name, ' !')
             continue 
         if isinstance(param, Parameter): 
             param = param.data
         try:
-            custom_state_dict[name].copy_(param)
+            dst_state_dict[name].copy_(param)
         except:
             print(name, ' is inconsistent!')
             continue
@@ -164,8 +164,10 @@ def copy_parameter_from_resnet50(custom_model, res50_dict):
 
 def load_Res50Model():
     model = ResNet(Bottleneck, [3, 4, 6, 3])
-    copy_parameter_from_resnet50(model, 
-                torchvision.models.resnet50(pretrained = True).state_dict())
+    copy_parameter_from_resnet50(
+        model, # dst model
+        torchvision.models.resnet50(pretrained = True).state_dict() # src model state dict
+        )
     return model
 
 if __name__ == '__main__':
