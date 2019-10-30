@@ -5,7 +5,7 @@
 # @author: Changjiang Cai, ccai1@stevens.edu, caicj5351@gmail.com
 # @version: 0.0.1
 # @creation date: 30-10-2019
-# @last modified: Wed 30 Oct 2019 02:45:55 AM EDT
+# @last modified: Wed 30 Oct 2019 04:47:16 PM EDT
 
 from __future__ import absolute_import
 from __future__ import division
@@ -50,18 +50,21 @@ def Encoder_resnet(x, is_training=True, weight_decay=0.001, reuse=False):
       activation.
     """
 
-    from tensorflow.contrib.slim.python.slim.nets import resnet_v2
+    #from tensorflow.contrib.slim.python.slim.nets import resnet_v2
+    from src import resnet_v2
     with tf.name_scope("Encoder_resnet", [x]):
         with slim.arg_scope(resnet_v2.resnet_arg_scope(weight_decay=weight_decay)):
-            net, end_points = resnet_v2.resnet_v2_50(
+            net, end_points, debug_dict = resnet_v2.resnet_v2_50(
                 x,
                 num_classes=None,
                 is_training=is_training,
                 reuse=reuse,
-                scope='resnet_v2_50')
+                scope='resnet_v2_50',
+                isFetchDictForDebug = True
+                )
             net = tf.squeeze(net, axis=[1, 2])
     variables = tf.contrib.framework.get_variables('resnet_v2_50')
-    return net, variables
+    return net, variables, debug_dict
 
 def save_to_json(dict_to_save, param_path):
         tmp_dict_to_save = {}
@@ -73,8 +76,8 @@ def save_to_json(dict_to_save, param_path):
 def run_model(x, is_training=True,weight_decay=0.001, pretrained_model_path = None):
     sess = tf.Session()
     img_resnet_vars_list = {}
-    img_feat, E_var = Encoder_resnet(x, is_training, weight_decay, reuse=False)
-    #print (E_var)
+    img_feat, E_var, debug_dict = Encoder_resnet(x, is_training, weight_decay)
+    #print ('E_var = ', E_var)
     #load resnet_v2_50 part
     for var in E_var:
         if 'resnet_v2_50' in var.name:
@@ -86,17 +89,26 @@ def run_model(x, is_training=True,weight_decay=0.001, pretrained_model_path = No
             """
             key_tmp = var.name.split(":")[0]
             img_resnet_vars_list[key_tmp] = var
-    #print (img_resnet_vars_list)
+    #print ('img_resnet_vars_list = ', img_resnet_vars_list)
     pre_train_saver_img = tf.train.Saver(img_resnet_vars_list)
 
     # load pre_train
     pre_train_saver_img.restore(sess, pretrained_model_path)
+    name_list = [
+            ('resnet_v2_50/conv1/weights', (7, 7, 3, 64)),
+            ('resnet_v2_50/conv1/biases', (64,)),
+            ]
 
-    y = sess.run(img_feat)
-    return y
-
-
-
+    fetch_dict = {'y': img_feat}
+    for key,shape in name_list:
+        with tf.variable_scope('', reuse=tf.AUTO_REUSE):
+            fetch_dict[key] = tf.get_variable(key, shape)
+    
+    """ for debugging dict from resnet_v2_50 """
+    for k,v in debug_dict.items():
+        fetch_dict[k] = v
+    fetch_dict = sess.run(fetch_dict)
+    return fetch_dict
 
 
 if __name__ == "__main__":
@@ -110,15 +122,16 @@ if __name__ == "__main__":
     pretrained_model_path = "/home/ccj/hmr-rgbd/models/hmr_pretrained_model/model.ckpt-667589"
     weight_decay = 0.001
     is_training = False
-    y = run_model(x, is_training, weight_decay, pretrained_model_path)
-    y = np.reshape(y, [-1])
+    fetch_dict = run_model(x, is_training, weight_decay, pretrained_model_path)
+    for k, v in fetch_dict.items():
+        if 'x_' in k:
+            print ("[***] ", k , "has ", v.shape)
+            n,h,w,c = v.shape
+            for c_idx in [50]:
+                if c_idx < c:
+                    print ('channel slice c = %d\n' %c_idx, v[0, 0: min(5,h), 0:min(5,w), c_idx])
+
+    y = np.reshape(fetch_dict['y'], [-1])
     print ('y shape = ', y.shape)
-    save_to_json({'y_tf': y}, '/home/ccj/hmr-rgbd/results/resnet-v2-50-hmr-tf-feature.json')
-
-
-
-
-    
-
-
-
+    print ('y = ', y[100:105])
+    #save_to_json(fetch_dict, '/home/ccj/hmr-rgbd/results/resnet-v2-50-hmr-tf-fetch.json')

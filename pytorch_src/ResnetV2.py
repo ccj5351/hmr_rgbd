@@ -5,7 +5,7 @@
 # @author: Changjiang Cai, ccai1@stevens.edu, caicj5351@gmail.com
 # @version: 0.0.1
 # @creation date: 23-10-2019
-# @last modified: Wed 23 Oct 2019 01:13:22 PM EDT
+# @last modified: Wed 30 Oct 2019 03:17:36 PM EDT
 """
     file:   ResnetV2.py
     author: Changjiang Cai
@@ -105,7 +105,9 @@ class Bottleneck_V2(nn.Module):
 
 
 class ResNet_V2(nn.Module):
-    def __init__(self, block, layers, num_classes=None, global_pool = True):
+    def __init__(self, block, layers, num_classes=None, global_pool = True, 
+            isFetchDictForDebug = False):
+        self.isFetchDictForDebug = isFetchDictForDebug
         self.inplanes = 64
         self.expansion = 4
         super(ResNet_V2, self).__init__()
@@ -114,7 +116,6 @@ class ResNet_V2(nn.Module):
         # conv1 because the first ResNet unit will perform these. Cf.
         # Appendix of [2].
         #self.bn1 = nn.BatchNorm2d(64)
-        #self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
         self.layer1 = self._make_layer(block,  64, layers[0], stride=2)
@@ -126,6 +127,7 @@ class ResNet_V2(nn.Module):
         # normalization or activation functions in the residual unit output. See
         # Appendix of [2].
         self.postnorm = nn.BatchNorm2d(512*self.expansion)
+        self.relu = nn.ReLU(inplace=True)
         #self.avgpool = nn.AdaptiveAvgPool2d((1, 1)) # output is of size 1 x 1 here;
         self.global_pool = global_pool
         #Note: in HMR project, we set `num_classes=None`;
@@ -165,24 +167,40 @@ class ResNet_V2(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        """ fetch dict """
+        fetch_dict = {}
+        
         x = self.conv1(x)
+        fetch_dict['x_conv1'] = x
         x = self.maxpool(x)
+        fetch_dict['x_maxpool'] = x
 
         x = self.layer1(x)
+        fetch_dict['x_layer1'] = x
         x = self.layer2(x)
+        fetch_dict['x_layer2'] = x
         x = self.layer3(x)
+        fetch_dict['x_layer3'] = x
         x = self.layer4(x)
+        fetch_dict['x_layer4'] = x
         x = self.postnorm(x)
+        #Updated on 2019/10/30: missing the relu added!!!
+        x = self.relu(x)
+        fetch_dict['x_postnorm'] = x
         if self.global_pool:
             x = torch.mean(x, dim=[2,3], keepdim = True)
+            fetch_dict['x_global_pool'] = x
 
         if self.fc is not None:
             x = self.fc(torch.flatten(x,1))
-        return x
+        if self.isFetchDictForDebug:
+            return x, fetch_dict
+        else:
+            return x
 
 
-def resnet_v2_50(num_classes=None, global_pool = True):
-    model = ResNet_V2(Bottleneck_V2, [3,4,6,3],num_classes, global_pool)
+def resnet_v2_50(num_classes=None, global_pool = True, isFetchDictForDebug = False):
+    model = ResNet_V2(Bottleneck_V2, [3,4,6,3],num_classes, global_pool, isFetchDictForDebug)
     return model
 
 def get_tf2pt_key_map_dict():

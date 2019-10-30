@@ -135,7 +135,9 @@ def resnet_v2(inputs,
               output_stride=None,
               include_root_block=True,
               reuse=None,
-              scope=None):
+              scope=None,
+              isFetchDictForDebug = False, # added by CCJ for code debugging!!!
+              ):
   """Generator for v2 (preactivation) ResNet models.
 
   This function generates a family of ResNet v2 models. See the resnet_v2_*()
@@ -194,6 +196,7 @@ def resnet_v2(inputs,
   Raises:
     ValueError: If the target output_stride is not valid.
   """
+  fetch_dict = {}
   with variable_scope.variable_scope(scope, 'resnet_v2', [inputs], reuse=reuse) as sc:
     """ Comments added by CCJ: 
         here 'resnet_v2' is default_name, in case the 'scope' is None.
@@ -220,17 +223,26 @@ def resnet_v2(inputs,
           with arg_scope(
               [layers_lib.conv2d], activation_fn=None, normalizer_fn=None):
             net = resnet_utils.conv2d_same(net, 64, 7, stride=2, scope='conv1')
+            fetch_dict['x_conv1'] = net # added by CCJ;
           net = layers.max_pool2d(net, [3, 3], stride=2, scope='pool1')
+          fetch_dict['x_maxpool'] = net # added by CCJ;
         net = resnet_utils.stack_blocks_dense(net, blocks, output_stride)
+        fetch_dict['x_layer4'] = net # added by CCJ;
         # This is needed because the pre-activation variant does not have batch
         # normalization or activation functions in the residual unit output. See
         # Appendix of [2].
         net = layers.batch_norm(
             net, activation_fn=nn_ops.relu, scope='postnorm')
+        fetch_dict['x_postnorm'] = net
         if global_pool:
           # Global average pooling.
           net = math_ops.reduce_mean(net, [1, 2], # the dimensions to reduce, here [1,2] means H and W dimension, due to NHWC format;
-                name='pool5', keep_dims=True)
+                name='pool5', 
+                #keep_dims=True, 
+                #Replace keep_dims with keepdims in TF calls;
+                keepdims = True
+                )
+          fetch_dict['x_global_pool'] = net
         if num_classes is not None:
           net = layers_lib.conv2d(
               net,
@@ -242,7 +254,12 @@ def resnet_v2(inputs,
         end_points = utils.convert_collection_to_dict(end_points_collection)
         if num_classes is not None:
           end_points['predictions'] = layers.softmax(net, scope='predictions')
-        return net, end_points
+        if isFetchDictForDebug:
+            return net, end_points, fetch_dict
+        else:
+            return net, end_points
+
+
 resnet_v2.default_image_size = 224
 
 
@@ -276,7 +293,9 @@ def resnet_v2_50(inputs,
                  global_pool=True,
                  output_stride=None,
                  reuse=None,
-                 scope='resnet_v2_50'):
+                 scope='resnet_v2_50',
+                 isFetchDictForDebug = False
+                 ):
   """ResNet-50 model of [1]. See resnet_v2() for arg and return description."""
   blocks = [
       resnet_v2_block('block1', base_depth=64, num_units=3, stride=2),
@@ -293,7 +312,9 @@ def resnet_v2_50(inputs,
       output_stride,
       include_root_block=True,
       reuse=reuse,
-      scope=scope)
+      scope=scope,
+      isFetchDictForDebug=isFetchDictForDebug
+      )
 
 
 def resnet_v2_101(inputs,
