@@ -5,7 +5,7 @@
 # @author: Changjiang Cai, ccai1@stevens.edu, caicj5351@gmail.com
 # @version: 0.0.1
 # @creation date: 08-06-2019
-# @last modified: Tue 02 Jul 2019 11:29:00 PM EDT
+# @last modified: Wed 30 Oct 2019 12:56:15 AM EDT
 
 from __future__ import division
 import os
@@ -108,10 +108,10 @@ def save(fname, image, scale=1):
 
 def show(img):
   import matplotlib.pyplot as plt
-  imgplot = plt.imshow(img.astype(np.float32), cmap='gray');
-  plt.show();
+  imgplot = plt.imshow(img.astype(np.float32), cmap='gray')
+  plt.show()
 
 def show_uint8(img):
   import matplotlib.pyplot as plt
-  imgplot = plt.imshow(img.astype(np.uint8));
-  plt.show();
+  imgplot = plt.imshow(img.astype(np.uint8))
+  plt.show()
