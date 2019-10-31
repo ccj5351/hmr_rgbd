@@ -5,7 +5,7 @@
 # @author: Changjiang Cai, ccai1@stevens.edu, caicj5351@gmail.com
 # @version: 0.0.1
 # @creation date: 30-10-2019
-# @last modified: Wed 30 Oct 2019 04:47:16 PM EDT
+# @last modified: Wed 30 Oct 2019 07:33:42 PM EDT
 
 from __future__ import absolute_import
 from __future__ import division
@@ -129,9 +129,10 @@ if __name__ == "__main__":
             n,h,w,c = v.shape
             for c_idx in [50]:
                 if c_idx < c:
-                    print ('channel slice c = %d\n' %c_idx, v[0, 0: min(5,h), 0:min(5,w), c_idx])
-
+                    print ('channel slice c = %d\n' %c_idx, v[0, 0: min(7,h), 0:min(7,w), c_idx])
+    
     y = np.reshape(fetch_dict['y'], [-1])
     print ('y shape = ', y.shape)
-    print ('y = ', y[100:105])
+    print ('y = ', y[100:110])
+    print ('-'*20   )
     #save_to_json(fetch_dict, '/home/ccj/hmr-rgbd/results/resnet-v2-50-hmr-tf-fetch.json')

@@ -224,7 +224,11 @@ def resnet_v2(inputs,
               [layers_lib.conv2d], activation_fn=None, normalizer_fn=None):
             net = resnet_utils.conv2d_same(net, 64, 7, stride=2, scope='conv1')
             fetch_dict['x_conv1'] = net # added by CCJ;
+          # updated by CCJ:
+          #> see:https://www.corvil.com/kb/what-is-the-difference-between-same-and-valid-padding-in-tf-nn-max-pool-of-tensorflow
           net = layers.max_pool2d(net, [3, 3], stride=2, scope='pool1')
+          #net = layers.max_pool2d(net, [3, 3], stride=2, padding='VALID', scope='pool1') # 'VALID' is not default;
+          #net = layers.max_pool2d(net, [3, 3], stride=2, padding='SAME', scope='pool1') #'SAME' is by default;
           fetch_dict['x_maxpool'] = net # added by CCJ;
         net = resnet_utils.stack_blocks_dense(net, blocks, output_stride)
         fetch_dict['x_layer4'] = net # added by CCJ;

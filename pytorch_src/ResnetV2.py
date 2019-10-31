@@ -116,7 +116,13 @@ class ResNet_V2(nn.Module):
         # conv1 because the first ResNet unit will perform these. Cf.
         # Appendix of [2].
         #self.bn1 = nn.BatchNorm2d(64)
-        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+
+        #self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=0)
+        #Updated to implement 'same' padding in tensorflow; do manually padding to bottom and right, 
+        # then apply the follwoing maxpool with padding = 0 as its argument;
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=0)
+        # padding size: starting from the last dimension and moving forward;
+        self.maxpool_pad = (0,1,0,1)# i.e, (padding_left, padding_right, padding_top, padding_bottom)
 
         self.layer1 = self._make_layer(block,  64, layers[0], stride=2)
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
@@ -172,6 +178,10 @@ class ResNet_V2(nn.Module):
         
         x = self.conv1(x)
         fetch_dict['x_conv1'] = x
+
+        #Updated to implement 'same' padding in tensorflow; do manually padding to bottom and right, 
+        # then apply the follwoing maxpool with padding = 0 as its argument;
+        x = F.pad(x, pad = self.maxpool_pad, mode = 'constant', value = 0)
         x = self.maxpool(x)
         fetch_dict['x_maxpool'] = x
 
